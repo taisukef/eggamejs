@@ -1,0 +1,113 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<title>dnmk - eggamejs</title>
+<meta property="og:image" content="dnmk.png"/>
+<link rel="apple-touch-icon" href="dnmk.png"/>
+<script src="eggame.js"></script>
+<!--<script src="https://taisukef.github.io/egarjs/egarjs.js"></script>-->
+<script>"use strict"
+const main = function(app) {
+	let state = 0 // 0: title, 1: game, 2: end
+
+	let x, y, vy, ay
+	const hitw2 = 10 * 10
+	let score = 0
+
+	let enemy = []
+	let waitcnt
+	let cntspawn
+	let nspawn
+	let wspawn
+	let venemy
+	let phase
+
+	const addEnemy = function(ex, ey, v) {
+		const th = Math.atan2(ey - y, ex - x) + Math.PI
+		enemy.push({
+			x: ex, y: ey,
+			vx: Math.cos(th) * v, vy: Math.sin(th) * v
+		})
+	}
+	const tickEnemies = function(g) {
+		g.setColor(0, 0, 0)
+		let hit = false
+		for (let i = 0; i < enemy.length; i++) {
+			let e = enemy[i]
+			e.x += e.vx
+			e.y += e.vy
+			g.fillRect(e.x, e.y, 20, 20)
+			if (e.x < -20) {
+				enemy.splice(i, 1) // [i] = null
+				i--
+			}
+			const dx = x - e.x
+			const dy = y - e.y
+			if (dx * dx + dy * dy < hitw2)
+				hit = true
+		}
+		return hit
+	}
+	const init = function() {
+		x = 100
+		y = 500
+		vy = 0
+		ay = .1
+		enemy = []
+		waitcnt = 30
+		score = 0
+		phase = 0
+	}
+	app.loop = function(g, ts, dt, vw) {
+		if (state == 0) {
+			g.setColor(0, 0, 0)
+			g.setFontSize(220)
+			g.fillText("dnmk", 250, 500)
+		} else if (state == 1) {
+			g.setColor(255, 0, 0, 1)
+			g.fillRect(x, y, 20, 20)
+			y += vy
+			vy += ay
+			if (y < 0 || y > 1000) {
+				state = 2
+			}
+			if (!waitcnt) {
+				const th = cntspawn / 30 * Math.PI
+				const ex = Math.cos(th) * wspawn + (1000 - 100 - wspawn)
+				const ey = Math.sin(th) * 400 + 500
+				addEnemy(ex, ey, venemy)
+				cntspawn++
+				if (cntspawn == nspawn)
+					waitcnt = 100
+			} else {
+				waitcnt--
+				if (!waitcnt) {
+					phase++
+					cntspawn = 0
+					wspawn = rnd(3) * 100
+					nspawn = phase * 10
+					venemy = 1 + rnd(3) * 3
+				}
+			}
+			if (tickEnemies(g))
+				state = 2
+			score++
+		} else if (state == 2) {
+			g.setColor(0, 0, 0)
+			g.setFontSize(100)
+			g.fillText("the end...", 260, 400)
+			g.fillText("score: " + score, 260, 600)
+		}
+	}
+	app.tap = function() {
+		if (state == 0) {
+			state = 1
+			init()
+		} else if (state == 1) {
+			vy = -3
+		} else if (state == 2) {
+			state = 0
+		}
+	}
+}
+</script>
+</head>
+</html>

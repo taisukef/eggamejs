@@ -1,0 +1,47 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'/>
+<title>FPSChecker</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta property="og:image" content="ss.png"/>
+<link rel="apple-touch-icon" href="icon.png"/>
+<script src="eggame.js"></script>
+<script>'use strict'
+
+const main = function(app) {
+	var hz = 1;
+	var th = 0;
+	app.loop = function(g, ts, dt, vw) {
+		g.setColor(0, 0, 0)
+		var fh = 60
+		g.setFontSize(fh)
+		var s = "" + fixfloat(hz + 0.05, 1) + "Hz"
+		g.fillText(s, 10, 10 + fh)
+		
+		var s = "FPS: " + Math.floor(1000 / dt) + " / " + fixfloat(dt, 2) + "ms"
+		g.fillText(s, vw - g.measureText(s).width - 20, 10 + fh)
+		
+		th += dt / 1000 * Math.PI * 2 * hz
+		
+		var r = vw / 4;
+		var x = vw / 2 + Math.cos(th) * r;
+		var y = vw / 2 + Math.sin(th) * r;
+		var cr = 90;
+		
+		var rgb = hsv2rgb(th / (Math.PI * 2) * 360 + 90, 0.8, 0.8);
+		g.setColor(rgb[0], rgb[1], rgb[2]);
+		g.fillCircle(x, y, cr);
+		g.setColor(255, 255, 255);
+		var fh = 80;
+		g.setFontSize(fh);
+		var s = "" + fixfloat(hz, 1);
+		g.fillText(s, x - g.measureText(s).width / 2, y + fh / 4);
+	}
+	app.tap = function() {
+		if (hz == 10)
+			hz = 0.1;
+		else if (hz < 0.95)
+			hz += 0.1;
+		else
+			hz++;
+	}
+}
+</script></head></html>
